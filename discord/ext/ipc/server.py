@@ -39,7 +39,7 @@ class IpcServerResponse:
         for key, value in data["data"].items():
             setattr(self, key, value)
 
-    def to_json(self):
+    async def to_json(self):
         return self._json
 
     def __repr__(self):
@@ -97,7 +97,7 @@ class Server:
 
         self.endpoints = {}
 
-    def route(self, name=None):
+    async def route(self, name=None):
         """Used to register a coroutine as an endpoint when you have
         access to an instance of :class:`.Server`.
 
@@ -107,7 +107,7 @@ class Server:
             The endpoint name. If not provided the method name will be used.
         """
 
-        def decorator(func):
+        async def decorator(func):
             if not name:
                 self.endpoints[func.__name__] = func
             else:
@@ -117,7 +117,7 @@ class Server:
 
         return decorator
 
-    def update_endpoints(self):
+    async def update_endpoints(self):
         """Called internally to update the server's endpoints for cog routes."""
         self.endpoints = {**self.endpoints, **self.ROUTES}
 
@@ -131,7 +131,7 @@ class Server:
         request: :class:`~aiohttp.web.Request`
             The request made by the client, parsed by aiohttp.
         """
-        self.update_endpoints()
+        await self.update_endpoints()
 
         log.info("Initiating IPC Server.")
 
@@ -248,7 +248,7 @@ class Server:
         site = aiohttp.web.TCPSite(runner, self.host, port)
         await site.start()
 
-    def start(self):
+    async def start(self):
         """Starts the IPC server."""
         self.bot.dispatch("ipc_ready")
 
@@ -259,6 +259,6 @@ class Server:
             self._multicast_server = aiohttp.web.Application()
             self._multicast_server.router.add_route("GET", "/", self.handle_multicast)
 
-            self.loop.run_until_complete(self.__start(self._multicast_server, self.multicast_port))
+            await self.__start(self._multicast_server, self.multicast_port)
 
-        self.loop.run_until_complete(self.__start(self._server, self.port))
+        await self.__start(self._server, self.port)

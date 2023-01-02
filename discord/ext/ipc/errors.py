@@ -1,5 +1,12 @@
 from discord import DiscordException
 
+__all__ = (
+    "IPCError",
+    "NoEndpointFoundError",
+    "ServerConnectionRefusedError",
+    "JSONEncodeError",
+    "NotConnected"
+)
 
 class IPCError(DiscordException):
     """Base IPC exception class"""
